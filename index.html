@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Composite Area Lab: Divide and Conquer & Take-Away Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .canvas-board {
+            touch-action: none !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+    <header class="bg-indigo-700 text-white shadow-md border-b border-indigo-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-indigo-600 rounded-xl shadow-inner border border-indigo-400/30">
+                    <svg class="w-6 h-6 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-7-7"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight">Composite Area Lab</h1>
+                    <p class="text-xs text-indigo-200 font-medium">Divide and Conquer & Take-Away Method Studio</p>
+                </div>
+            </div>
+
+            <!-- Mode Selector Tabs -->
+            <div class="flex bg-indigo-900/70 p-1 rounded-xl border border-indigo-500/30 text-xs font-bold w-full md:w-auto justify-center">
+                <button onclick="switchMode('slice')" id="tab-slice" class="px-4 py-2 rounded-lg bg-white text-indigo-800 shadow-sm transition-all">
+                    ✂️ Divide and Conquer
+                </button>
+                <button onclick="switchMode('bounding')" id="tab-bounding" class="px-4 py-2 rounded-lg text-indigo-200 hover:text-white transition-all">
+                    📦 Take-Away Method
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+
+        <!-- ================= MODE 1: DIVIDE AND CONQUER STUDIO ================= -->
+        <div id="mode-slice-container" class="space-y-5">
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <h2 id="figureTitle" class="text-lg font-bold text-blue-900">Figure 1: Classic L-Shape Floor Plan</h2>
+                        <span class="px-2 py-0.5 text-[11px] font-bold bg-blue-200 text-blue-800 rounded-full">Divide and Conquer</span>
+                    </div>
+                    <p class="text-xs text-blue-700">
+                        <strong>Divide and Conquer:</strong> Drag straight across the figure to split it into smaller rectangles. Drag the ❓ Tag to a missing side to calculate it!
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 shrink-0">
+                    <div id="dragPinDock" class="flex items-center gap-2 bg-amber-100 border border-amber-300 px-3 py-1.5 rounded-xl shadow-xs">
+                        <span class="text-xs font-bold text-amber-900">Drag Tag:</span>
+                        <div id="draggableTag" class="cursor-grab active:cursor-grabbing px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-lg shadow-sm flex items-center gap-1 select-none touch-none transition-transform hover:scale-105">
+                            <span>❓ Tag</span>
+                        </div>
+                    </div>
+
+                    <div class="flex bg-white p-1 rounded-lg border border-blue-200 shadow-sm overflow-x-auto gap-1">
+                        <button onclick="selectFigure(0)" id="figBtn-0" class="fig-btn px-2.5 py-1 text-xs font-bold rounded-md bg-blue-600 text-white">1. L-Shape</button>
+                        <button onclick="selectFigure(1)" id="figBtn-1" class="fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-100">2. T-Shape</button>
+                        <button onclick="selectFigure(2)" id="figBtn-2" class="fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-100">3. Stairs</button>
+                        <button onclick="selectFigure(3)" id="figBtn-3" class="fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-100">4. U-Shape</button>
+                        <button onclick="selectFigure(4)" id="figBtn-4" class="fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-100">5. Photo Frame</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Divide and Conquer Board</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleSnap()" id="snapBtn" class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors flex items-center gap-1">
+                                🧲 Snap Guidelines: OFF
+                            </button>
+                            <button onclick="undoLastCut()" class="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors flex items-center gap-1">
+                                ↩️ Undo Cut
+                            </button>
+                            <button onclick="clearCutLine()" class="px-2.5 py-1 text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg transition-colors flex items-center gap-1">
+                                🗑️ Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative rounded-xl border border-slate-300 p-2 bg-white w-full flex justify-center items-center overflow-hidden min-h-[380px] canvas-board">
+                        <div id="dragAvatar" class="fixed pointer-events-none z-50 px-2.5 py-1 bg-amber-500 text-white font-extrabold text-xs rounded-lg shadow-xl border-2 border-amber-300 hidden -translate-x-1/2 -translate-y-1/2 flex items-center gap-1">
+                            <span>❓</span> <span>Drop Here</span>
+                        </div>
+
+                        <svg id="drawCanvas" width="460" height="360" viewBox="0 0 460 360" class="cursor-crosshair select-none w-full h-auto max-w-[460px] canvas-board">
+                            <rect width="460" height="360" fill="#ffffff" />
+                            <g id="shapeLayer"></g>
+                            <g id="subRegionsLayer"></g>
+                            <g id="cornerGuidesLayer"></g>
+                            <g id="dimensionLabelsLayer"></g>
+                            <g id="drawingLayer">
+                                <line id="activeDrawLine" x1="0" y1="0" x2="0" y2="0" stroke="#ef4444" stroke-width="4" stroke-dasharray="6,4" class="hidden"/>
+                                <circle id="startHandle" cx="0" cy="0" r="6" fill="#ef4444" class="hidden"/>
+                                <circle id="endHandle" cx="0" cy="0" r="6" fill="#ef4444" class="hidden"/>
+                            </g>
+                            <g id="committedCutLines"></g>
+                        </svg>
+                    </div>
+
+                    <div class="w-full flex justify-between items-center mt-3 text-xs text-slate-500">
+                        <span>💡 Tip: Drag across the figure through corners. Auto-straightener ensures straight cuts!</span>
+                        <span id="drawStatus" class="font-bold text-slate-700">Ready to slice (Auto-Straightener ON)</span>
+                    </div>
+                </div>
+
+                <!-- Missing Dimensions Deduction Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+                            <span>Divide and Conquer Studio</span>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 font-bold">Interactive Tool</span>
+                        </h3>
+
+                        <div id="missingSidesCard" class="p-3.5 bg-amber-50 rounded-xl border border-amber-200 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-extrabold text-amber-900 flex items-center gap-1">
+                                    🧠 Calculate Missing Sides
+                                </span>
+                                <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">Self-Check</span>
+                            </div>
+                            <p class="text-[11px] text-amber-800 leading-snug">
+                                Drag the ❓ tag onto an unlabelled side on the shape to unlock its calculation field!
+                            </p>
+                            <div id="missingSidesInputs" class="space-y-2">
+                                <!-- Dynamic missing side input fields -->
+                            </div>
+                        </div>
+
+                        <!-- Total Area Calculation & Self-Check Card -->
+                        <div id="totalAreaCard" class="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-extrabold text-emerald-900 flex items-center gap-1">
+                                    📐 Total Area Self-Check
+                                </span>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Final Answer</span>
+                            </div>
+                            <p class="text-[11px] text-emerald-800 leading-snug">
+                                Add up your divided rectangles and enter your calculated total area to check your answer:
+                            </p>
+                            <div class="space-y-2">
+                                <div class="flex gap-2">
+                                    <input type="text" id="userSliceTotalArea" placeholder="e.g. 146 or 48 + 98" 
+                                           class="w-full px-2.5 py-1.5 text-xs bg-white border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <button onclick="checkSliceTotalArea()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-colors shadow-xs shrink-0 flex items-center gap-1">
+                                        <span>Check</span> 🎯
+                                    </button>
+                                </div>
+                                <div id="sliceTotalAreaFeedback" class="text-xs font-bold hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hints Buttons -->
+                    <div class="mt-6 pt-4 border-t border-slate-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                                💡 Hints
+                            </h4>
+                            <span class="text-[10px] text-slate-400 font-medium">Click to preview cut</span>
+                        </div>
+                        <div id="presetCutBtns" class="flex flex-wrap gap-1.5">
+                            <!-- Dynamic hint buttons -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= MODE 2: TAKE-AWAY METHOD STUDIO ================= -->
+        <div id="mode-bounding-container" class="hidden space-y-5">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="space-y-1">
+                    <h2 class="text-lg font-bold text-amber-900" id="bbFigureTitle">Take-Away Method (Figure 1: Classic L-Shape)</h2>
+                    <p class="text-xs text-amber-800">
+                        <strong>Interactive Tracing:</strong> Drag diagonally across the shape to <strong>TRACE</strong> the big outer box, then trace the cutout rectangle(s) to take away!
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="autoTraceBBStep()" class="px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-900 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 border border-indigo-300">
+                        ✨ Auto-Trace Step
+                    </button>
+                    <button onclick="resetBB()" class="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-900 text-xs font-bold rounded-lg transition-colors flex items-center gap-1">
+                        🔄 Reset Steps
+                    </button>
+                </div>
+            </div>
+
+            <!-- Figure Selection Bar for Take-Away Method -->
+            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+                <span class="text-xs font-bold text-slate-700">Select Figure to Practice:</span>
+                <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200 overflow-x-auto gap-1">
+                    <button onclick="selectFigure(0)" id="bbFigBtn-0" class="bb-fig-btn px-2.5 py-1 text-xs font-bold rounded-md bg-amber-600 text-white">1. L-Shape</button>
+                    <button onclick="selectFigure(1)" id="bbFigBtn-1" class="bb-fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-200">2. T-Shape</button>
+                    <button onclick="selectFigure(2)" id="bbFigBtn-2" class="bb-fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-200">3. Stairs</button>
+                    <button onclick="selectFigure(3)" id="bbFigBtn-3" class="bb-fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-200">4. U-Shape</button>
+                    <button onclick="selectFigure(4)" id="bbFigBtn-4" class="bb-fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-200">5. Photo Frame</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Interactive Step Flow Bar -->
+            <div id="bbStepFlowBar" class="grid grid-cols-3 gap-2 text-center text-xs font-bold"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Visual Box Diagram with Dimension Labels -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Take-Away Tracing Board</span>
+                        <span id="bbInstructionTag" class="text-xs font-bold text-indigo-700 bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-300">
+                            ✏️ Step 1: Drag diagonally to TRACE the Big Outer Box
+                        </span>
+                    </div>
+
+                    <!-- Canvas Container with Interactive Touch/Pointer Screen Support -->
+                    <div class="relative rounded-xl border border-slate-300 p-2 bg-white w-full flex justify-center items-center overflow-hidden min-h-[380px] canvas-board">
+                        <svg id="boundingCanvas" width="460" height="360" viewBox="0 0 460 360" class="cursor-crosshair select-none w-full h-auto max-w-[460px] canvas-board">
+                            <!-- Rendered dynamically via JS with figure & measurements -->
+                        </svg>
+                    </div>
+
+                    <div class="w-full flex justify-between items-center mt-3 text-xs text-slate-500">
+                        <span>💡 Touch TV Friendly: Touch & drag corner to opposite corner. Tap step buttons above anytime!</span>
+                    </div>
+                </div>
+
+                <!-- Student Practice & Self-Check Workspace -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+                    <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+                        <span>Student Math Workspace</span>
+                        <span class="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">Self-Test</span>
+                    </h3>
+
+                    <div id="bbStudentWorkspace" class="space-y-3">
+                        <!-- Rendered dynamically by JS -->
+                    </div>
+
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
+                        🧠 <strong>Strategy Tip:</strong> Check the dimension labels on the shape to calculate the Outer Box Area and Cutout Area(s), then subtract them!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification Popup -->
+    <div id="toastMessage" class="fixed bottom-6 right-6 px-4 py-3 bg-slate-900 text-white text-sm font-medium rounded-xl shadow-2xl border border-slate-700 transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none flex items-center space-x-2 z-50">
+        <span id="toastIcon">⚠️</span>
+        <span id="toastText">Notification message</span>
+    </div>
+
+    <script>
+        const FIGURES = [
+            {
+                id: 'l-shape',
+                name: 'Figure 1: Classic L-Shape',
+                totalArea: 146,
+                polygon: [
+                    { x: 60, y: 40, label: 'A', offset: { x: -12, y: -8 } },
+                    { x: 220, y: 40, label: 'B', offset: { x: 0, y: -12 } },
+                    { x: 220, y: 160, label: 'C', offset: { x: -14, y: 14 } },
+                    { x: 340, y: 160, label: 'D', offset: { x: 12, y: -8 } },
+                    { x: 340, y: 300, label: 'E', offset: { x: 12, y: 12 } },
+                    { x: 60, y: 300, label: 'F', offset: { x: -12, y: 12 } }
+                ],
+                labels: [
+                    { id: 'top', x: 140, y: 30, text: "8 m", val: 8, isDerived: false },
+                    { id: 'BC', x: 235, y: 100, text: "6 m", val: 6, isDerived: true, formula: "FA - DE = 13m - 7m = 6m", name: "Side BC" },
+                    { id: 'CD', x: 280, y: 150, text: "6 m", val: 6, isDerived: true, formula: "EF - AB = 14m - 8m = 6m", name: "Side CD" },
+                    { id: 'right_vert', x: 355, y: 230, text: "7 m", val: 7, isDerived: false },
+                    { id: 'bottom', x: 200, y: 320, text: "14 m", val: 14, isDerived: false },
+                    { id: 'left_vert', x: 40, y: 170, text: "13 m", val: 13, isDerived: false }
+                ],
+                innerCorners: [{ x: 220, y: 160 }],
+                validCuts: [
+                    { id: 'h_corner', type: 'horizontal', name: 'Horizontal Cut', p1: { x: 60, y: 160 }, p2: { x: 340, y: 160 } },
+                    { id: 'v_corner', type: 'vertical', name: 'Vertical Cut', p1: { x: 220, y: 40 }, p2: { x: 220, y: 300 } }
+                ],
+                bounding: {
+                    outerW: 14, outerH: 13, outerArea: 182, finalArea: 146,
+                    rectOuter: { x: 60, y: 40, w: 280, h: 260 },
+                    cutouts: [
+                        { name: "Corner Cutout", w: 6, h: 6, area: 36, rect: { x: 220, y: 40, w: 120, h: 120 } }
+                    ],
+                    dimensions: [
+                        { x: 140, y: 26, text: "8 m" },
+                        { x: 38, y: 170, text: "13 m" },
+                        { x: 200, y: 322, text: "14 m" },
+                        { x: 362, y: 230, text: "7 m" }
+                    ]
+                }
+            },
+            {
+                id: 't-shape',
+                name: 'Figure 2: T-Shape Floor Plan',
+                totalArea: 96,
+                polygon: [
+                    { x: 80, y: 50, label: 'A', offset: { x: -12, y: -8 } },
+                    { x: 360, y: 50, label: 'B', offset: { x: 12, y: -8 } },
+                    { x: 360, y: 130, label: 'C', offset: { x: 12, y: 0 } },
+                    { x: 270, y: 130, label: 'D', offset: { x: -12, y: -12 } },
+                    { x: 270, y: 290, label: 'E', offset: { x: 12, y: 12 } },
+                    { x: 170, y: 290, label: 'F', offset: { x: -12, y: 12 } },
+                    { x: 170, y: 130, label: 'G', offset: { x: 12, y: -12 } },
+                    { x: 80, y: 130, label: 'H', offset: { x: -12, y: 0 } }
+                ],
+                labels: [
+                    { id: 'top_full', x: 220, y: 40, text: "14 m", val: 14, isDerived: false },
+                    { id: 'right_arm', x: 375, y: 90, text: "4 m", val: 4, isDerived: false },
+                    { id: 'CD', x: 315, y: 120, text: "4.5 m", val: 4.5, isDerived: true, formula: "(AB - EF) ÷ 2 = (14m - 5m) ÷ 2 = 4.5m", name: "Side CD" },
+                    { id: 'stem_right', x: 285, y: 210, text: "8 m", val: 8, isDerived: false },
+                    { id: 'bottom_stem', x: 220, y: 310, text: "5 m", val: 5, isDerived: false },
+                    { id: 'FG', x: 155, y: 210, text: "8 m", val: 8, isDerived: true, formula: "Matches Side DE = 8m", name: "Side FG" },
+                    { id: 'GH', x: 125, y: 120, text: "4.5 m", val: 4.5, isDerived: true, formula: "AB - CD - EF = 14m - 4.5m - 5m = 4.5m", name: "Side GH" },
+                    { id: 'left_arm', x: 65, y: 90, text: "4 m", val: 4, isDerived: false }
+                ],
+                innerCorners: [{ x: 170, y: 130 }, { x: 270, y: 130 }],
+                validCuts: [
+                    { id: 'h_bar', type: 'horizontal', name: 'Horizontal Cut Top Bar', p1: { x: 80, y: 130 }, p2: { x: 360, y: 130 } },
+                    { id: 'v_left', type: 'vertical', name: 'Vertical Left Stem Cut', p1: { x: 170, y: 50 }, p2: { x: 170, y: 290 } }
+                ],
+                bounding: {
+                    outerW: 14, outerH: 12, outerArea: 168, finalArea: 96,
+                    rectOuter: { x: 80, y: 50, w: 280, h: 240 },
+                    cutouts: [
+                        { name: "Left Cutout Rectangle", w: 4.5, h: 8, area: 36, rect: { x: 80, y: 130, w: 90, h: 160 } },
+                        { name: "Right Cutout Rectangle", w: 4.5, h: 8, area: 36, rect: { x: 270, y: 130, w: 90, h: 160 } }
+                    ],
+                    dimensions: [
+                        { x: 220, y: 34, text: "14 m" },
+                        { x: 58, y: 90, text: "4 m" },
+                        { x: 382, y: 90, text: "4 m" },
+                        { x: 294, y: 210, text: "8 m" },
+                        { x: 220, y: 312, text: "5 m" }
+                    ]
+                }
+            },
+            {
+                id: 'stairs',
+                name: 'Figure 3: Staircase Step Shape',
+                totalArea: 135,
+                polygon: [
+                    { x: 60, y: 70, label: 'A', offset: { x: -12, y: -8 } },
+                    { x: 160, y: 70, label: 'B', offset: { x: 0, y: -12 } },
+                    { x: 160, y: 130, label: 'C', offset: { x: -14, y: 12 } },
+                    { x: 260, y: 130, label: 'D', offset: { x: 0, y: -12 } },
+                    { x: 260, y: 210, label: 'E', offset: { x: -14, y: 12 } },
+                    { x: 380, y: 210, label: 'F', offset: { x: 12, y: -8 } },
+                    { x: 380, y: 310, label: 'G', offset: { x: 12, y: 12 } },
+                    { x: 60, y: 310, label: 'H', offset: { x: -12, y: 12 } }
+                ],
+                labels: [
+                    { id: 'top_step', x: 110, y: 60, text: "5 m", val: 5, isDerived: false },
+                    { id: 'BC', x: 175, y: 100, text: "3 m", val: 3, isDerived: true, formula: "HA - DE - FG = 12m - 4m - 5m = 3m", name: "Side BC" },
+                    { id: 'CD', x: 210, y: 120, text: "5 m", val: 5, isDerived: true, formula: "GH - AB - EF = 16m - 5m - 6m = 5m", name: "Side CD" },
+                    { id: 'step2_drop', x: 275, y: 170, text: "4 m", val: 4, isDerived: false },
+                    { id: 'step3_width', x: 320, y: 200, text: "6 m", val: 6, isDerived: false },
+                    { id: 'right_bottom', x: 395, y: 260, text: "5 m", val: 5, isDerived: false },
+                    { id: 'full_bottom', x: 220, y: 330, text: "16 m", val: 16, isDerived: false },
+                    { id: 'full_left', x: 40, y: 190, text: "12 m", val: 12, isDerived: false }
+                ],
+                innerCorners: [{ x: 160, y: 130 }, { x: 260, y: 210 }],
+                validCuts: [
+                    { id: 'v_step1', type: 'vertical', name: 'Vertical Cut Step 1', p1: { x: 160, y: 70 }, p2: { x: 160, y: 310 } },
+                    { id: 'v_step2', type: 'vertical', name: 'Vertical Cut Step 2', p1: { x: 260, y: 130 }, p2: { x: 260, y: 310 } }
+                ],
+                bounding: {
+                    outerW: 16, outerH: 12, outerArea: 192, finalArea: 135,
+                    rectOuter: { x: 60, y: 70, w: 320, h: 240 },
+                    activeVariantIndex: 0,
+                    variants: [
+                        {
+                            id: 'horizontal',
+                            label: 'Horizontal Split (11×3 & 6×4)',
+                            cutouts: [
+                                { name: "Cutout (11 m × 3 m)", w: 11, h: 3, area: 33, rect: { x: 160, y: 70, w: 220, h: 60 } },
+                                { name: "Cutout (6 m × 4 m)", w: 6, h: 4, area: 24, rect: { x: 260, y: 130, w: 120, h: 80 } }
+                            ]
+                        },
+                        {
+                            id: 'vertical',
+                            label: 'Vertical Split (5×3 & 6×7)',
+                            cutouts: [
+                                { name: "Cutout (5 m × 3 m)", w: 5, h: 3, area: 15, rect: { x: 160, y: 70, w: 100, h: 60 } },
+                                { name: "Cutout (6 m × 7 m)", w: 6, h: 7, area: 42, rect: { x: 260, y: 70, w: 120, h: 140 } }
+                            ]
+                        }
+                    ],
+                    get cutouts() {
+                        return this.variants ? this.variants[this.activeVariantIndex].cutouts : this._cutouts;
+                    },
+                    dimensions: [
+                        { x: 110, y: 54, text: "5 m" },
+                        { x: 38, y: 190, text: "12 m" },
+                        { x: 220, y: 332, text: "16 m" },
+                        { x: 404, y: 260, text: "5 m" },
+                        { x: 282, y: 170, text: "4 m" },
+                        { x: 320, y: 196, text: "6 m" }
+                    ]
+                }
+            },
+            {
+                id: 'u-shape',
+                name: 'Figure 4: U-Shape Courtyard',
+                totalArea: 124,
+                polygon: [
+                    { x: 70, y: 60, label: 'A', offset: { x: -12, y: -8 } },
+                    { x: 150, y: 60, label: 'B', offset: { x: 0, y: -12 } },
+                    { x: 150, y: 220, label: 'C', offset: { x: -14, y: 14 } },
+                    { x: 290, y: 220, label: 'D', offset: { x: 14, y: 14 } },
+                    { x: 290, y: 60, label: 'E', offset: { x: 0, y: -12 } },
+                    { x: 370, y: 60, label: 'F', offset: { x: 12, y: -8 } },
+                    { x: 370, y: 300, label: 'G', offset: { x: 12, y: 12 } },
+                    { x: 70, y: 300, label: 'H', offset: { x: -12, y: 12 } }
+                ],
+                labels: [
+                    { id: 'left_top_arm', x: 110, y: 50, text: "4 m", val: 4, isDerived: false },
+                    { id: 'inner_left_depth', x: 132, y: 140, text: "8 m", val: 8, isDerived: false },
+                    { id: 'CD', x: 220, y: 210, text: "7 m", val: 7, isDerived: true, formula: "GH - AB - EF = 15m - 4m - 4m = 7m", name: "Side CD" },
+                    { id: 'DE', x: 308, y: 140, text: "8 m", val: 8, isDerived: true, formula: "Matches Side BC = 8m", name: "Side DE" },
+                    { id: 'right_top_arm', x: 330, y: 50, text: "4 m", val: 4, isDerived: false },
+                    { id: 'right_outer_height', x: 385, y: 180, text: "12 m", val: 12, isDerived: false },
+                    { id: 'bottom_width', x: 220, y: 320, text: "15 m", val: 15, isDerived: false },
+                    { id: 'left_outer_height', x: 55, y: 180, text: "12 m", val: 12, isDerived: false }
+                ],
+                innerCorners: [{ x: 150, y: 220 }, { x: 290, y: 220 }],
+                validCuts: [
+                    { id: 'h_bridge', type: 'horizontal', name: 'Horizontal Base Cut', p1: { x: 70, y: 220 }, p2: { x: 370, y: 220 } },
+                    { id: 'v_left', type: 'vertical', name: 'Vertical Left Cut', p1: { x: 150, y: 60 }, p2: { x: 150, y: 300 } },
+                    { id: 'v_right', type: 'vertical', name: 'Vertical Right Cut', p1: { x: 290, y: 60 }, p2: { x: 290, y: 300 } }
+                ],
+                bounding: {
+                    outerW: 15, outerH: 12, outerArea: 180, finalArea: 124,
+                    rectOuter: { x: 70, y: 60, w: 300, h: 240 },
+                    cutouts: [
+                        { name: "Courtyard Cutout", w: 7, h: 8, area: 56, rect: { x: 150, y: 60, w: 140, h: 160 } }
+                    ],
+                    dimensions: [
+                        { x: 110, y: 44, text: "4 m" },
+                        { x: 48, y: 180, text: "12 m" },
+                        { x: 220, y: 322, text: "15 m" },
+                        { x: 394, y: 180, text: "12 m" },
+                        { x: 330, y: 44, text: "4 m" },
+                        { x: 172, y: 140, text: "8 m" }
+                    ]
+                }
+            },
+            {
+                id: 'photo-frame',
+                name: 'Figure 5: Photo Frame Border',
+                totalArea: 112,
+                pathData: 'M 70 50 L 390 50 L 390 290 L 70 290 Z M 130 90 L 330 90 L 330 250 L 130 250 Z',
+                polygon: [
+                    { x: 70, y: 50, label: 'A', offset: { x: -12, y: -8 } },
+                    { x: 390, y: 50, label: 'B', offset: { x: 12, y: -8 } },
+                    { x: 390, y: 290, label: 'C', offset: { x: 12, y: 12 } },
+                    { x: 70, y: 290, label: 'D', offset: { x: -12, y: 12 } },
+                    { x: 130, y: 90, label: 'E', offset: { x: 12, y: 12 } },
+                    { x: 330, y: 90, label: 'F', offset: { x: -12, y: 12 } },
+                    { x: 330, y: 250, label: 'G', offset: { x: -12, y: -12 } },
+                    { x: 130, y: 250, label: 'H', offset: { x: 12, y: -12 } }
+                ],
+                labels: [
+                    { id: 'top_outer', x: 230, y: 38, text: "16 m", val: 16, isDerived: false },
+                    { id: 'left_outer', x: 48, y: 170, text: "12 m", val: 12, isDerived: false },
+                    { id: 'bottom_outer', x: 230, y: 304, text: "16 m", val: 16, isDerived: false },
+                    { id: 'right_outer', x: 412, y: 170, text: "12 m", val: 12, isDerived: false },
+                    { id: 'border_top', x: 100, y: 70, text: "2 m", val: 2, isDerived: false },
+                    { id: 'border_left', x: 100, y: 170, text: "3 m", val: 3, isDerived: false },
+                    { id: 'EF', x: 230, y: 78, text: "10 m", val: 10, isDerived: true, formula: "AB - Left(3m) - Right(3m) = 16m - 6m = 10m", name: "Side EF (Inner Width)" },
+                    { id: 'HE', x: 155, y: 170, text: "8 m", val: 8, isDerived: true, formula: "AD - Top(2m) - Bottom(2m) = 12m - 4m = 8m", name: "Side HE (Inner Height)" }
+                ],
+                innerCorners: [
+                    { x: 130, y: 90 },
+                    { x: 330, y: 90 },
+                    { x: 330, y: 250 },
+                    { x: 130, y: 250 }
+                ],
+                validCuts: [
+                    { id: 'h_top', type: 'horizontal', name: 'Horizontal Cut Top', p1: { x: 70, y: 90 }, p2: { x: 390, y: 90 } },
+                    { id: 'h_bottom', type: 'horizontal', name: 'Horizontal Cut Bottom', p1: { x: 70, y: 250 }, p2: { x: 390, y: 250 } },
+                    { id: 'v_left', type: 'vertical', name: 'Vertical Cut Left', p1: { x: 130, y: 50 }, p2: { x: 130, y: 290 } },
+                    { id: 'v_right', type: 'vertical', name: 'Vertical Cut Right', p1: { x: 330, y: 50 }, p2: { x: 330, y: 290 } }
+                ],
+                bounding: {
+                    outerW: 16, outerH: 12, outerArea: 192, finalArea: 112,
+                    rectOuter: { x: 70, y: 50, w: 320, h: 240 },
+                    cutouts: [
+                        { name: "Inner Photo Cutout", w: 10, h: 8, area: 80, rect: { x: 130, y: 90, w: 200, h: 160 } }
+                    ],
+                    dimensions: [
+                        { x: 230, y: 34, text: "16 m" },
+                        { x: 48, y: 170, text: "12 m" },
+                        { x: 230, y: 308, text: "16 m" },
+                        { x: 412, y: 170, text: "12 m" },
+                        { x: 100, y: 70, text: "2 m" },
+                        { x: 100, y: 170, text: "3 m" }
+                    ]
+                }
+            }
+        ];
+
+        let activeMode = 'slice'; 
+        let currentFigIndex = 0;
+        let isSnapEnabled = false; 
+        let verifiedSides = {}; 
+        let placedTags = {}; 
+        let isTagDragging = false;
+
+        let isDrawing = false;
+        let drawStart = null;
+        let activeCuts = []; 
+
+        let bbOuterTraced = false;
+        let bbTracedCutouts = new Set();
+        let bbIsTracing = false;
+        let bbTraceStart = null;
+        let bbTraceCurrent = null;
+
+        window.onload = function() {
+            initPointerEvents();
+            initTagDragEvents();
+            initBBTracingEvents();
+            renderCurrentFigure();
+        };
+
+        function switchMode(mode) {
+            activeMode = mode;
+            
+            const sliceContainer = document.getElementById('mode-slice-container');
+            const boundingContainer = document.getElementById('mode-bounding-container');
+
+            const tabSlice = document.getElementById('tab-slice');
+            const tabBounding = document.getElementById('tab-bounding');
+
+            if (sliceContainer) sliceContainer.classList.add('hidden');
+            if (boundingContainer) boundingContainer.classList.add('hidden');
+
+            if (tabSlice) tabSlice.className = "px-4 py-2 rounded-lg text-indigo-200 hover:text-white transition-all";
+            if (tabBounding) tabBounding.className = "px-4 py-2 rounded-lg text-indigo-200 hover:text-white transition-all";
+
+            if (mode === 'slice') {
+                if (sliceContainer) sliceContainer.classList.remove('hidden');
+                if (tabSlice) tabSlice.className = "px-4 py-2 rounded-lg bg-white text-indigo-800 shadow-sm transition-all";
+                renderCurrentFigure();
+            } else if (mode === 'bounding') {
+                if (boundingContainer) boundingContainer.classList.remove('hidden');
+                if (tabBounding) tabBounding.className = "px-4 py-2 rounded-lg bg-white text-indigo-800 shadow-sm transition-all";
+                renderBoundingBoxView();
+            }
+        }
+
+        function selectFigure(index) {
+            currentFigIndex = index;
+            activeCuts = [];
+            placedTags = {};
+            verifiedSides = {};
+            bbOuterTraced = false;
+            bbTracedCutouts.clear();
+            if (FIGURES[index].bounding && FIGURES[index].bounding.variants) {
+                FIGURES[index].bounding.activeVariantIndex = 0;
+            }
+
+            const sliceTotalInput = document.getElementById('userSliceTotalArea');
+            if (sliceTotalInput) sliceTotalInput.value = '';
+            const sliceFeedback = document.getElementById('sliceTotalAreaFeedback');
+            if (sliceFeedback) {
+                sliceFeedback.classList.add('hidden');
+                sliceFeedback.innerHTML = '';
+            }
+
+            for (let i = 0; i < FIGURES.length; i++) {
+                const btn = document.getElementById(`figBtn-${i}`);
+                if (btn) {
+                    btn.className = i === index ? 
+                        "fig-btn px-2.5 py-1 text-xs font-bold rounded-md bg-blue-600 text-white" : 
+                        "fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-100";
+                }
+                const bbBtn = document.getElementById(`bbFigBtn-${i}`);
+                if (bbBtn) {
+                    bbBtn.className = i === index ? 
+                        "bb-fig-btn px-2.5 py-1 text-xs font-bold rounded-md bg-amber-600 text-white" : 
+                        "bb-fig-btn px-2.5 py-1 text-xs font-bold rounded-md text-slate-600 hover:bg-slate-200";
+                }
+            }
+
+            document.getElementById('figureTitle').textContent = FIGURES[index].name;
+            const bbTitle = document.getElementById('bbFigureTitle');
+            if (bbTitle) bbTitle.textContent = `Take-Away Method (${FIGURES[index].name})`;
+
+            renderCurrentFigure();
+            if (activeMode === 'bounding') renderBoundingBoxView();
+        }
+
+        function toggleSnap() {
+            isSnapEnabled = !isSnapEnabled;
+            const btn = document.getElementById('snapBtn');
+            if (btn) {
+                btn.textContent = isSnapEnabled ? "🧲 Snap Guidelines: ON" : "🧲 Snap Guidelines: OFF";
+                btn.className = isSnapEnabled ? 
+                    "px-2.5 py-1 text-xs font-bold bg-amber-500 text-white rounded-lg shadow-sm transition-colors flex items-center gap-1" : 
+                    "px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors flex items-center gap-1";
+            }
+            renderCornerGuides();
+        }
+
+        function undoLastCut() {
+            if (activeCuts.length > 0) {
+                activeCuts.pop();
+                renderCurrentFigure();
+                showToast("Last cut removed", "↩️");
+            }
+        }
+
+        function clearCutLine() {
+            activeCuts = [];
+            renderCurrentFigure();
+            showToast("All cuts cleared", "🗑️");
+        }
+
+        function getSVGCoordinates(e, svg) {
+            const rect = svg.getBoundingClientRect();
+            const scaleX = svg.viewBox.baseVal.width / rect.width;
+            const scaleY = svg.viewBox.baseVal.height / rect.height;
+            const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+            const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+            return {
+                x: Math.round((clientX - rect.left) * scaleX),
+                y: Math.round((clientY - rect.top) * scaleY)
+            };
+        }
+
+        function evalMathExpression(val) {
+            if (val === undefined || val === null) return NaN;
+            if (typeof val === 'number') return val;
+            let s = val.toString().trim().toLowerCase();
+            s = s.replace(/\bby\b/g, '*').replace(/x/g, '*').replace(/×/g, '*');
+            s = s.replace(/[^0-9+\-*/().]/g, '');
+            if (!s) return NaN;
+            try {
+                const res = Function(`"use strict"; return (${s})`)();
+                return typeof res === 'number' && !isNaN(res) ? res : NaN;
+            } catch(e) {
+                return NaN;
+            }
+        }
+
+        function computeIoU(r1, r2) {
+            const ix1 = Math.max(r1.x, r2.x);
+            const iy1 = Math.max(r1.y, r2.y);
+            const ix2 = Math.min(r1.x + r1.w, r2.x + r2.w);
+            const iy2 = Math.min(r1.y + r1.h, r2.y + r2.h);
+            if (ix2 <= ix1 || iy2 <= iy1) return 0;
+            const interArea = (ix2 - ix1) * (iy2 - iy1);
+            const unionArea = (r1.w * r1.h) + (r2.w * r2.h) - interArea;
+            return unionArea > 0 ? interArea / unionArea : 0;
+        }
+
+        function autoStraightenCoords(start, current) {
+            if (!start) return current;
+            const dx = Math.abs(current.x - start.x);
+            const dy = Math.abs(current.y - start.y);
+            return dx > dy ? { x: current.x, y: start.y } : { x: start.x, y: current.y };
+        }
+
+        function initPointerEvents() {
+            const canvas = document.getElementById('drawCanvas');
+            if (!canvas) return;
+
+            canvas.addEventListener('pointerdown', (e) => {
+                if (activeMode !== 'slice' || isTagDragging) return;
+                try { canvas.setPointerCapture(e.pointerId); } catch(err){}
+                const coords = getSVGCoordinates(e, canvas);
+
+                isDrawing = true;
+                drawStart = coords;
+
+                const activeLine = document.getElementById('activeDrawLine');
+                const startHandle = document.getElementById('startHandle');
+                const endHandle = document.getElementById('endHandle');
+
+                if (activeLine && startHandle && endHandle) {
+                    activeLine.setAttribute('x1', coords.x);
+                    activeLine.setAttribute('y1', coords.y);
+                    activeLine.setAttribute('x2', coords.x);
+                    activeLine.setAttribute('y2', coords.y);
+                    activeLine.classList.remove('hidden');
+
+                    startHandle.setAttribute('cx', coords.x);
+                    startHandle.setAttribute('cy', coords.y);
+                    startHandle.classList.remove('hidden');
+
+                    endHandle.setAttribute('cx', coords.x);
+                    endHandle.setAttribute('cy', coords.y);
+                    endHandle.classList.remove('hidden');
+                }
+            });
+
+            canvas.addEventListener('pointermove', (e) => {
+                if (!isDrawing) return;
+                let coords = getSVGCoordinates(e, canvas);
+
+                coords = autoStraightenCoords(drawStart, coords);
+                if (isSnapEnabled) coords = snapToInnerCorners(coords);
+
+                const activeLine = document.getElementById('activeDrawLine');
+                const endHandle = document.getElementById('endHandle');
+
+                if (activeLine && endHandle) {
+                    activeLine.setAttribute('x2', coords.x);
+                    activeLine.setAttribute('y2', coords.y);
+                    endHandle.setAttribute('cx', coords.x);
+                    endHandle.setAttribute('cy', coords.y);
+                }
+            });
+
+            const onPointerEnd = (e) => {
+                if (!isDrawing) return;
+                isDrawing = false;
+                try { canvas.releasePointerCapture(e.pointerId); } catch(err){}
+
+                let drawEnd = getSVGCoordinates(e, canvas);
+                drawEnd = autoStraightenCoords(drawStart, drawEnd);
+                if (isSnapEnabled) drawEnd = snapToInnerCorners(drawEnd);
+
+                const activeLine = document.getElementById('activeDrawLine');
+                const startHandle = document.getElementById('startHandle');
+                const endHandle = document.getElementById('endHandle');
+
+                if (activeLine && startHandle && endHandle) {
+                    activeLine.classList.add('hidden');
+                    startHandle.classList.add('hidden');
+                    endHandle.classList.add('hidden');
+                }
+
+                const dx = Math.abs(drawEnd.x - drawStart.x);
+                const dy = Math.abs(drawEnd.y - drawStart.y);
+
+                if (dx < 15 && dy < 15) return;
+
+                const cutType = dx > dy ? 'horizontal' : 'vertical';
+                evaluateNewCut(drawStart, drawEnd, cutType);
+            };
+
+            canvas.addEventListener('pointerup', onPointerEnd);
+            canvas.addEventListener('pointercancel', onPointerEnd);
+        }
+
+        function snapToInnerCorners(pt) {
+            const fig = FIGURES[currentFigIndex];
+            const snapDist = 20;
+            for (let corner of fig.innerCorners) {
+                if (Math.abs(pt.x - corner.x) < snapDist) pt.x = corner.x;
+                if (Math.abs(pt.y - corner.y) < snapDist) pt.y = corner.y;
+            }
+            return pt;
+        }
+
+        function evaluateNewCut(p1, p2, type) {
+            const fig = FIGURES[currentFigIndex];
+            let matchedCut = null;
+
+            for (let validCut of fig.validCuts) {
+                if (validCut.type === type) {
+                    const matchesP1 = Math.abs((type === 'horizontal' ? p1.y : p1.x) - (type === 'horizontal' ? validCut.p1.y : validCut.p1.x)) < 30;
+                    if (matchesP1) {
+                        matchedCut = validCut;
+                        break;
+                    }
+                }
+            }
+
+            if (matchedCut) {
+                activeCuts.push({ type, p1, p2, matchedCut });
+                renderCurrentFigure();
+                showToast("Great cut! Figure split into sub-rectangles.", "✂️");
+            } else {
+                showToast("Try slicing straight through an inner corner to divide into rectangles!", "💡");
+            }
+        }
+
+        function initTagDragEvents() {
+            const tag = document.getElementById('draggableTag');
+            const avatar = document.getElementById('dragAvatar');
+            if (!tag || !avatar) return;
+
+            const onStart = (e) => {
+                isTagDragging = true;
+                avatar.classList.remove('hidden');
+                moveAvatar(e);
+            };
+
+            const onMove = (e) => {
+                if (!isTagDragging) return;
+                moveAvatar(e);
+            };
+
+            const onEnd = (e) => {
+                if (!isTagDragging) return;
+                isTagDragging = false;
+                avatar.classList.add('hidden');
+
+                const clientX = e.clientX ?? (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : 0);
+                const clientY = e.clientY ?? (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : 0);
+
+                const canvas = document.getElementById('drawCanvas');
+                const rect = canvas.getBoundingClientRect();
+
+                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                    const coords = getSVGCoordinates({ clientX, clientY }, canvas);
+                    checkTagDropOnSide(coords);
+                }
+            };
+
+            const moveAvatar = (e) => {
+                const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                avatar.style.left = `${clientX}px`;
+                avatar.style.top = `${clientY}px`;
+            };
+
+            tag.addEventListener('pointerdown', (e) => {
+                try { tag.setPointerCapture(e.pointerId); } catch(err){}
+                onStart(e);
+            });
+            tag.addEventListener('pointermove', onMove);
+            tag.addEventListener('pointerup', (e) => {
+                try { tag.releasePointerCapture(e.pointerId); } catch(err){}
+                onEnd(e);
+            });
+            tag.addEventListener('pointercancel', onEnd);
+        }
+
+        function checkTagDropOnSide(pt) {
+            const fig = FIGURES[currentFigIndex];
+            let hitDerived = null;
+
+            for (let lbl of fig.labels) {
+                if (lbl.isDerived) {
+                    const dist = Math.hypot(pt.x - lbl.x, pt.y - lbl.y);
+                    if (dist < 50) {
+                        hitDerived = lbl;
+                        break;
+                    }
+                }
+            }
+
+            if (hitDerived) {
+                placedTags[hitDerived.id] = true;
+                renderCurrentFigure();
+                showToast(`Tag placed! Calculate missing length for ${hitDerived.name}`, "🎯");
+            } else {
+                showToast("Drop the tag near an unlabelled missing side!", "💡");
+            }
+        }
+
+        function renderShapePolygon() {
+            const layer = document.getElementById('shapeLayer');
+            const subLayer = document.getElementById('subRegionsLayer');
+            if (!layer) return;
+
+            const fig = FIGURES[currentFigIndex];
+            const pts = fig.polygon;
+            const pathData = fig.pathData || pts.map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`).join(' ') + ' Z';
+
+            let verticesHtml = '';
+            for (let pt of pts) {
+                const labelX = pt.x + pt.offset.x;
+                const labelY = pt.y + pt.offset.y;
+                verticesHtml += `
+                    <circle cx="${pt.x}" cy="${pt.y}" r="4.5" fill="#3730a3" stroke="#ffffff" stroke-width="1.5"/>
+                    <text x="${labelX}" y="${labelY}" fill="#1e1b4b" font-weight="900" font-size="12" text-anchor="middle" dominant-baseline="central">
+                        ${pt.label}
+                    </text>
+                `;
+            }
+
+            layer.innerHTML = `
+                <path d="${pathData}" fill="#e0e7ff" fill-rule="evenodd" stroke="#3730a3" stroke-width="3.5" stroke-linejoin="round"/>
+                ${verticesHtml}
+            `;
+
+            if (subLayer) subLayer.innerHTML = '';
+        }
+
+        function renderCornerGuides() {
+            const layer = document.getElementById('cornerGuidesLayer');
+            if (!layer) return;
+
+            if (!isSnapEnabled) {
+                layer.innerHTML = '';
+                return;
+            }
+
+            const fig = FIGURES[currentFigIndex];
+            let html = '';
+
+            for (let corner of fig.innerCorners) {
+                html += `
+                    <line x1="0" y1="${corner.y}" x2="460" y2="${corner.y}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8"/>
+                    <line x1="${corner.x}" y1="0" x2="${corner.x}" y2="360" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.8"/>
+                    <circle cx="${corner.x}" cy="${corner.y}" r="6" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+                `;
+            }
+            layer.innerHTML = html;
+        }
+
+        function renderDimensionLabels() {
+            const layer = document.getElementById('dimensionLabelsLayer');
+            if (!layer) return;
+
+            const fig = FIGURES[currentFigIndex];
+            let html = '';
+
+            for (let lbl of fig.labels) {
+                if (!lbl.isDerived) {
+                    html += `
+                        <rect x="${lbl.x - 22}" y="${lbl.y - 12}" width="44" height="20" rx="6" fill="#ffffff" stroke="#3730a3" stroke-width="1.5"/>
+                        <text x="${lbl.x}" y="${lbl.y + 3}" fill="#1e1b4b" font-weight="800" font-size="11" text-anchor="middle">${lbl.text}</text>
+                    `;
+                } else {
+                    const isUnlocked = placedTags[lbl.id] || verifiedSides[lbl.id];
+                    if (isUnlocked) {
+                        const isVerified = verifiedSides[lbl.id];
+                        const bgColor = isVerified ? "#dcfce7" : "#fef3c7";
+                        const strokeColor = isVerified ? "#16a34a" : "#d97706";
+                        const textColor = isVerified ? "#15803d" : "#92400e";
+
+                        html += `
+                            <rect x="${lbl.x - 24}" y="${lbl.y - 12}" width="48" height="22" rx="6" fill="${bgColor}" stroke="${strokeColor}" stroke-width="2"/>
+                            <text x="${lbl.x}" y="${lbl.y + 4}" fill="${textColor}" font-weight="800" font-size="11" text-anchor="middle">
+                                ${isVerified ? lbl.text : '❓ Tag'}
+                            </text>
+                        `;
+                    }
+                }
+            }
+            layer.innerHTML = html;
+        }
+
+        function renderCommittedCuts() {
+            const layer = document.getElementById('committedCutLines');
+            if (!layer) return;
+
+            let html = '';
+            for (let cut of activeCuts) {
+                const p1 = cut.p1;
+                const p2 = cut.p2;
+                html += `
+                    <line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#dc2626" stroke-width="4" stroke-dasharray="6,4"/>
+                    <circle cx="${p1.x}" cy="${p1.y}" r="5" fill="#dc2626"/>
+                    <circle cx="${p2.x}" cy="${p2.y}" r="5" fill="#dc2626"/>
+                `;
+            }
+            layer.innerHTML = html;
+        }
+
+        function renderCurrentFigure() {
+            renderShapePolygon();
+            renderCornerGuides();
+            renderDimensionLabels();
+            renderCommittedCuts();
+            renderPresetCutButtons();
+            renderMissingSidesCard();
+        }
+
+        function renderMissingSidesCard() {
+            const container = document.getElementById('missingSidesInputs');
+            if (!container) return;
+
+            const fig = FIGURES[currentFigIndex];
+            const derivedLabels = fig.labels.filter(l => l.isDerived);
+
+            if (derivedLabels.length === 0) {
+                container.innerHTML = '<p class="text-xs text-amber-800">All dimensions given!</p>';
+                return;
+            }
+
+            let html = '';
+            for (let lbl of derivedLabels) {
+                const isUnlocked = placedTags[lbl.id];
+                const isVerified = verifiedSides[lbl.id];
+
+                if (!isUnlocked && !isVerified) {
+                    html += `
+                        <div class="p-2 bg-amber-100/60 rounded-lg border border-amber-200 text-[11px] text-amber-900 flex justify-between items-center">
+                            <span>🔒 Drop ❓ tag on <strong>${lbl.name}</strong> to unlock</span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="p-2.5 bg-white rounded-lg border border-amber-200 space-y-1">
+                            <div class="flex justify-between items-center text-xs font-bold text-amber-900">
+                                <span>${lbl.name}:</span>
+                                ${isVerified ? '<span class="text-emerald-600 font-extrabold">Correct ✅</span>' : ''}
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="input_side_${lbl.id}" placeholder="Length in meters" 
+                                       value="${isVerified ? lbl.val : ''}" ${isVerified ? 'disabled' : ''}
+                                       class="w-full px-2 py-1 text-xs border border-amber-300 rounded focus:ring-1 focus:ring-amber-500 outline-none">
+                                ${!isVerified ? `
+                                    <button onclick="verifyMissingSide('${lbl.id}')" class="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded transition-colors">
+                                        Check
+                                    </button>
+                                ` : ''}
+                            </div>
+                            <p class="text-[10px] text-slate-500 italic">Formula hint: ${lbl.formula}</p>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function verifyMissingSide(sideId) {
+            const fig = FIGURES[currentFigIndex];
+            const lbl = fig.labels.find(l => l.id === sideId);
+            const input = document.getElementById(`input_side_${sideId}`);
+
+            if (!lbl || !input) return;
+
+            const userVal = parseFloat(input.value);
+            if (userVal === lbl.val) {
+                verifiedSides[sideId] = true;
+                renderCurrentFigure();
+                showToast(`Correct! ${lbl.name} = ${lbl.val} m`, "🌟");
+            } else {
+                showToast(`Not quite right. Formula hint: ${lbl.formula}`, "💡");
+            }
+        }
+
+        function checkSliceTotalArea() {
+            const fig = FIGURES[currentFigIndex];
+            const input = document.getElementById('userSliceTotalArea');
+            const feedback = document.getElementById('sliceTotalAreaFeedback');
+            if (!input || !feedback) return;
+
+            const userVal = evalMathExpression(input.value);
+            if (isNaN(userVal)) {
+                showToast("Please enter a valid number or calculation (e.g. 146 or 48 + 98)!", "💡");
+                return;
+            }
+
+            if (Math.abs(userVal - fig.totalArea) < 0.01) {
+                feedback.className = "text-xs font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300 p-2.5 rounded-lg flex items-center gap-1.5";
+                feedback.innerHTML = `<span>🎉 Correct! The total composite area is <strong>${fig.totalArea} m²</strong>.</span>`;
+                feedback.classList.remove('hidden');
+                showToast(`Awesome job! Total Area = ${fig.totalArea} m²`, "🌟");
+            } else {
+                feedback.className = "text-xs font-extrabold text-rose-800 bg-rose-100 border border-rose-300 p-2.5 rounded-lg flex items-center gap-1.5";
+                feedback.innerHTML = `<span>🤔 Not quite (${userVal} m²). Check your rectangle dimensions and sum, then try again!</span>`;
+                feedback.classList.remove('hidden');
+                showToast("Check your rectangle dimensions and addition!", "🤔");
+            }
+        }
+
+        function renderPresetCutButtons() {
+            const container = document.getElementById('presetCutBtns');
+            if (!container) return;
+
+            const fig = FIGURES[currentFigIndex];
+            let html = '';
+
+            for (let cut of fig.validCuts) {
+                html += `
+                    <button onclick="applyPresetCut('${cut.id}')" class="px-2.5 py-1 text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-lg transition-colors flex items-center gap-1">
+                        <span>✂️ Hint: ${cut.name}</span>
+                    </button>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function applyPresetCut(cutId) {
+            const fig = FIGURES[currentFigIndex];
+            const preset = fig.validCuts.find(c => c.id === cutId);
+            if (!preset) return;
+
+            const exists = activeCuts.some(c => c.matchedCut && c.matchedCut.id === cutId);
+            if (!exists) {
+                activeCuts.push({ type: preset.type, p1: preset.p1, p2: preset.p2, matchedCut: preset });
+            }
+
+            renderCurrentFigure();
+            showToast(`Hint applied: ${preset.name}`, "✂️");
+        }
+
+        function initBBTracingEvents() {
+            const canvas = document.getElementById('boundingCanvas');
+            if (!canvas) return;
+
+            const onPointerDown = (e) => {
+                const fig = FIGURES[currentFigIndex];
+                const allCutoutsDone = bbOuterTraced && bbTracedCutouts.size >= fig.bounding.cutouts.length;
+                if (activeMode !== 'bounding' || allCutoutsDone) return;
+
+                try { canvas.setPointerCapture(e.pointerId); } catch(err){}
+                const coords = getSVGCoordinates(e, canvas);
+                bbIsTracing = true;
+                bbTraceStart = coords;
+                bbTraceCurrent = coords;
+                renderBoundingBoxView();
+            };
+
+            const onPointerMove = (e) => {
+                if (!bbIsTracing) return;
+                bbTraceCurrent = getSVGCoordinates(e, canvas);
+                renderBoundingBoxView();
+            };
+
+            const onPointerUp = (e) => {
+                if (!bbIsTracing) return;
+                bbIsTracing = false;
+                try { canvas.releasePointerCapture(e.pointerId); } catch(err){}
+
+                if (!bbTraceStart || !bbTraceCurrent) {
+                    renderBoundingBoxView();
+                    return;
+                }
+
+                const x1 = Math.min(bbTraceStart.x, bbTraceCurrent.x);
+                const x2 = Math.max(bbTraceStart.x, bbTraceCurrent.x);
+                const y1 = Math.min(bbTraceStart.y, bbTraceCurrent.y);
+                const y2 = Math.max(bbTraceStart.y, bbTraceCurrent.y);
+                const w = x2 - x1;
+                const h = y2 - y1;
+
+                bbTraceStart = null;
+                bbTraceCurrent = null;
+
+                // Generous tolerance for Interactive TV stylus and finger gestures
+                if (w < 25 || h < 25) {
+                    renderBoundingBoxView();
+                    return;
+                }
+
+                const fig = FIGURES[currentFigIndex];
+                const bb = fig.bounding;
+
+                if (!bbOuterTraced) {
+                    const target = bb.rectOuter;
+                    const overlapX = Math.max(0, Math.min(x2, target.x + target.w) - Math.max(x1, target.x));
+                    const overlapY = Math.max(0, Math.min(y2, target.y + target.h) - Math.max(y1, target.y));
+                    const overlapArea = overlapX * overlapY;
+                    const targetArea = target.w * target.h;
+
+                    if (overlapArea / targetArea > 0.25 || (Math.abs(x1 - target.x) < 85 && Math.abs(y1 - target.y) < 85)) {
+                        bbOuterTraced = true;
+                        showToast(`Outer Box Traced! (${bb.outerW}m × ${bb.outerH}m)`, "📦");
+                    } else {
+                        showToast("Drag diagonally across opposite corners to trace the Big Outer Box!", "💡");
+                    }
+                } else {
+                    const drawnRect = { x: x1, y: y1, w, h };
+
+                    if (bb.variants) {
+                        let bestMatch = null;
+                        let bestScore = 0.20; // IoU threshold
+
+                        for (let v = 0; v < bb.variants.length; v++) {
+                            // If a cutout was already traced in current variant, stick to current variant
+                            if (bbTracedCutouts.size > 0 && v !== bb.activeVariantIndex) continue;
+
+                            const variantCutouts = bb.variants[v].cutouts;
+                            for (let i = 0; i < variantCutouts.length; i++) {
+                                if (v === bb.activeVariantIndex && bbTracedCutouts.has(i)) continue;
+                                const iou = computeIoU(drawnRect, variantCutouts[i].rect);
+                                if (iou > bestScore) {
+                                    bestScore = iou;
+                                    bestMatch = { variant: v, cutoutIdx: i, cutout: variantCutouts[i] };
+                                }
+                            }
+                        }
+
+                        if (bestMatch) {
+                            if (bestMatch.variant !== bb.activeVariantIndex) {
+                                bb.activeVariantIndex = bestMatch.variant;
+                                bbTracedCutouts.clear();
+                            }
+                            bbTracedCutouts.add(bestMatch.cutoutIdx);
+                            showToast(`Traced ${bestMatch.cutout.name}!`, "✂️");
+                        } else {
+                            showToast("Drag diagonally across any cutout (e.g. 5m × 3m or 6m × 7m) to trace it!", "💡");
+                        }
+                    } else if (bbTracedCutouts.size < bb.cutouts.length) {
+                        let bestIdx = -1;
+                        let bestScore = 0.20;
+
+                        for (let i = 0; i < bb.cutouts.length; i++) {
+                            if (bbTracedCutouts.has(i)) continue;
+                            const iou = computeIoU(drawnRect, bb.cutouts[i].rect);
+                            if (iou > bestScore) {
+                                bestScore = iou;
+                                bestIdx = i;
+                            }
+                        }
+
+                        if (bestIdx !== -1) {
+                            bbTracedCutouts.add(bestIdx);
+                            showToast(`Traced ${bb.cutouts[bestIdx].name}!`, "✂️");
+                        } else {
+                            showToast("Drag diagonally across any remaining cutout to trace it!", "💡");
+                        }
+                    }
+                }
+
+                renderBoundingBoxView();
+            };
+
+            canvas.addEventListener('pointerdown', onPointerDown);
+            canvas.addEventListener('pointermove', onPointerMove);
+            canvas.addEventListener('pointerup', onPointerUp);
+            canvas.addEventListener('pointercancel', onPointerUp);
+        }
+
+        function autoTraceBBStep() {
+            const fig = FIGURES[currentFigIndex];
+            const bb = fig.bounding;
+
+            if (!bbOuterTraced) {
+                bbOuterTraced = true;
+                showToast(`Auto-traced Big Outer Box: ${bb.outerW}m × ${bb.outerH}m`, "✨");
+            } else if (bbTracedCutouts.size < bb.cutouts.length) {
+                // Find first untraced cutout
+                for (let i = 0; i < bb.cutouts.length; i++) {
+                    if (!bbTracedCutouts.has(i)) {
+                        bbTracedCutouts.add(i);
+                        showToast(`Auto-traced ${bb.cutouts[i].name}!`, "✨");
+                        break;
+                    }
+                }
+            } else {
+                bbOuterTraced = false;
+                bbTracedCutouts.clear();
+                showToast("Reset Take-Away steps. Ready to trace again!", "🔄");
+            }
+            renderBoundingBoxView();
+        }
+
+        function resetBB() {
+            bbOuterTraced = false;
+            bbTracedCutouts.clear();
+            bbIsTracing = false;
+            bbTraceStart = null;
+            bbTraceCurrent = null;
+            renderBoundingBoxView();
+            showToast("Reset Take-Away steps. Drag across outer box to start tracing!", "🔄");
+        }
+
+        function switchCutoutVariant(variantIndex) {
+            const fig = FIGURES[currentFigIndex];
+            if (!fig.bounding || !fig.bounding.variants) return;
+            fig.bounding.activeVariantIndex = variantIndex;
+            bbTracedCutouts.clear();
+            renderBoundingBoxView();
+            showToast(`Switched to: ${fig.bounding.variants[variantIndex].label}`, "🔀");
+        }
+
+        function renderBoundingBoxView() {
+            const fig = FIGURES[currentFigIndex];
+            const canvas = document.getElementById('boundingCanvas');
+            const bb = fig.bounding;
+
+            if (!canvas || !bb) return;
+
+            const pathData = fig.pathData || fig.polygon.map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`).join(' ') + ' Z';
+            const allCutoutsDone = bbTracedCutouts.size >= bb.cutouts.length;
+
+            let liveRectHtml = '';
+            if (bbIsTracing && bbTraceStart && bbTraceCurrent) {
+                const lx = Math.min(bbTraceStart.x, bbTraceCurrent.x);
+                const ly = Math.min(bbTraceStart.y, bbTraceCurrent.y);
+                const lw = Math.abs(bbTraceCurrent.x - bbTraceStart.x);
+                const lh = Math.abs(bbTraceCurrent.y - bbTraceStart.y);
+                const strokeColor = !bbOuterTraced ? "#4f46e5" : "#e11d48";
+                const fillColor = !bbOuterTraced ? "rgba(99, 102, 241, 0.25)" : "rgba(244, 63, 94, 0.25)";
+
+                liveRectHtml = `
+                    <rect x="${lx}" y="${ly}" width="${lw}" height="${lh}" 
+                          fill="${fillColor}" stroke="${strokeColor}" stroke-width="3.5" stroke-dasharray="6,4" rx="4"/>
+                    <text x="${lx + lw/2}" y="${ly + lh/2}" fill="${strokeColor}" font-weight="800" font-size="12" text-anchor="middle">
+                        Tracing...
+                    </text>
+                `;
+            }
+
+            let cutoutsSvgHtml = '';
+            for (let i = 0; i < bb.cutouts.length; i++) {
+                if (bbTracedCutouts.has(i)) {
+                    const c = bb.cutouts[i];
+                    cutoutsSvgHtml += `
+                        <g opacity="0.9">
+                            <rect x="${c.rect.x}" y="${c.rect.y}" width="${c.rect.w}" height="${c.rect.h}" 
+                                  fill="#fecdd3" stroke="#e11d48" stroke-width="3" stroke-dasharray="4,4" rx="4"/>
+                            <text x="${c.rect.x + c.rect.w/2}" y="${c.rect.y + c.rect.h/2}" 
+                                  fill="#9f1239" font-weight="900" font-size="11" text-anchor="middle" class="select-none">
+                                ✂️ Cutout
+                            </text>
+                        </g>
+                    `;
+                }
+            }
+
+            // Clean side-length dimension badges for the figure
+            let dimensionsSvgHtml = '';
+            if (bb.dimensions && bb.dimensions.length > 0) {
+                for (let d of bb.dimensions) {
+                    const badgeWidth = Math.max(34, d.text.length * 7 + 14);
+
+                    dimensionsSvgHtml += `
+                        <g>
+                            <rect x="${d.x - badgeWidth/2}" y="${d.y - 11}" width="${badgeWidth}" height="22" rx="6" 
+                                  fill="#ffffff" stroke="#3730a3" stroke-width="1.5"/>
+                            <text x="${d.x}" y="${d.y + 4}" fill="#1e1b4b" font-weight="800" font-size="11" text-anchor="middle">
+                                ${d.text}
+                            </text>
+                        </g>
+                    `;
+                }
+            }
+
+            let bbVerticesHtml = '';
+            for (let pt of fig.polygon) {
+                const labelX = pt.x + pt.offset.x;
+                const labelY = pt.y + pt.offset.y;
+                bbVerticesHtml += `
+                    <circle cx="${pt.x}" cy="${pt.y}" r="4" fill="#1e1b4b" stroke="#ffffff" stroke-width="1"/>
+                    <text x="${labelX}" y="${labelY}" fill="#1e1b4b" font-weight="800" font-size="11" text-anchor="middle" dominant-baseline="central">
+                        ${pt.label}
+                    </text>
+                `;
+            }
+
+            canvas.innerHTML = `
+                <rect width="460" height="360" fill="#ffffff" />
+                <path d="${pathData}" fill="${bbOuterTraced ? '#818cf8' : '#e0e7ff'}" fill-rule="evenodd" fill-opacity="${allCutoutsDone ? '1' : '0.85'}" stroke="#3730a3" stroke-width="3.5" class="transition-all duration-500"/>
+                ${bbVerticesHtml}
+
+                ${bbOuterTraced ? `
+                    <g>
+                        <rect x="${bb.rectOuter.x}" y="${bb.rectOuter.y}" width="${bb.rectOuter.w}" height="${bb.rectOuter.h}" 
+                              fill="#c7d2fe" fill-opacity="0.35" stroke="#4f46e5" stroke-width="3.5" rx="6"/>
+                        <rect x="${bb.rectOuter.x + 8}" y="${bb.rectOuter.y + 8}" width="175" height="22" rx="5" fill="#1e1b4b"/>
+                        <text x="${bb.rectOuter.x + 18}" y="${bb.rectOuter.y + 23}" fill="#4ade80" font-weight="800" font-size="10.5">
+                            ✅ Big Outer Box Traced
+                        </text>
+                    </g>
+                ` : ''}
+
+                ${cutoutsSvgHtml}
+                ${dimensionsSvgHtml}
+                ${liveRectHtml}
+            `;
+
+            const flowBar = document.getElementById('bbStepFlowBar');
+            if (flowBar) {
+                const numCutouts = bb.cutouts.length;
+                flowBar.style.gridTemplateColumns = `repeat(${numCutouts + 2}, minmax(0, 1fr))`;
+
+                let barHtml = `
+                    <button onclick="toggleBBOuter()" class="p-2 rounded-xl border transition-all ${bbOuterTraced ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-indigo-600 text-white border-indigo-700 animate-pulse'}">
+                        <span>1. Outer Box 📦 ${bbOuterTraced ? '✅' : ''}</span>
+                    </button>
+                `;
+
+                for (let i = 0; i < numCutouts; i++) {
+                    const isDone = bbTracedCutouts.has(i);
+                    const isNext = bbOuterTraced && !isDone;
+                    const cName = numCutouts > 1 ? `Cutout ${i + 1}` : 'Cutout Notch';
+
+                    barHtml += `
+                        <button onclick="toggleBBCutout(${i})" class="p-2 rounded-xl border transition-all ${isDone ? 'bg-emerald-600 text-white border-emerald-700' : (isNext ? 'bg-rose-500 text-white border-rose-600 animate-pulse' : 'bg-slate-100 text-slate-400 border-slate-200')}">
+                            <span>${i + 2}. ${cName} ✂️ ${isDone ? '✅' : ''}</span>
+                        </button>
+                    `;
+                }
+
+                barHtml += `
+                    <div class="p-2 rounded-xl border transition-all ${allCutoutsDone ? 'bg-amber-500 text-white font-extrabold border-amber-600 shadow' : 'bg-slate-100 text-slate-400 border-slate-200'}">
+                        <span>${numCutouts + 2}. Student Test 🧮</span>
+                    </div>
+                `;
+                flowBar.innerHTML = barHtml;
+            }
+
+            // Top Guidance Tag
+            const tag = document.getElementById('bbInstructionTag');
+            if (tag) {
+                if (!bbOuterTraced) {
+                    tag.className = "text-xs font-bold text-indigo-700 bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-300";
+                    tag.textContent = "✏️ Step 1: Drag diagonally to TRACE the Big Outer Box";
+                } else if (!allCutoutsDone) {
+                    tag.className = "text-xs font-bold text-rose-700 bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-300";
+                    tag.textContent = `✂️ Step 2: Trace any remaining cutout (${bbTracedCutouts.size}/${bb.cutouts.length} traced)`;
+                } else {
+                    tag.className = "text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-300";
+                    tag.textContent = "🎉 Tracing complete! Calculate Big Outer Area − Cutout(s) Area";
+                }
+            }
+
+            const workspace = document.getElementById('bbStudentWorkspace');
+            if (workspace) {
+                let variantToggleHtml = '';
+                if (bb.variants) {
+                    variantToggleHtml = `
+                        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-1.5">
+                            <span class="text-[11px] font-bold text-amber-900 block">✂️ Cutout Partition Strategy:</span>
+                            <div class="flex gap-1.5">
+                                <button onclick="switchCutoutVariant(0)" class="flex-1 py-1 px-2 text-[10px] font-extrabold rounded-lg border transition-all ${bb.activeVariantIndex === 0 ? 'bg-amber-600 text-white border-amber-700 shadow-xs' : 'bg-white text-amber-900 border-amber-300 hover:bg-amber-100'}">
+                                    ↔️ Horizontal (11×3 & 6×4)
+                                </button>
+                                <button onclick="switchCutoutVariant(1)" class="flex-1 py-1 px-2 text-[10px] font-extrabold rounded-lg border transition-all ${bb.activeVariantIndex === 1 ? 'bg-amber-600 text-white border-amber-700 shadow-xs' : 'bg-white text-amber-900 border-amber-300 hover:bg-amber-100'}">
+                                    ↕️ Vertical (5×3 & 6×7)
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                let html = `
+                    ${variantToggleHtml}
+                    <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-indigo-900">1. Big Outer Box Area (m²)</span>
+                            <span class="text-[10px] text-indigo-700 font-semibold">Value or Length × Breadth</span>
+                        </div>
+                        <input type="text" id="userOuterArea" placeholder="e.g. 192 or 16 × 12" 
+                               class="w-full px-2.5 py-1.5 text-xs bg-white border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                `;
+
+                for (let i = 0; i < bb.cutouts.length; i++) {
+                    const label = bb.cutouts.length > 1 ? `Cutout ${i + 1} Area (either order) (m²)` : 'Cutout Area (m²)';
+                    const hintText = bb.variants ? (bb.activeVariantIndex === 1 ? (i === 0 ? 'e.g. 15 or 5 × 3' : 'e.g. 42 or 6 × 7') : (i === 0 ? 'e.g. 33 or 11 × 3' : 'e.g. 24 or 6 × 4')) : 'e.g. 36 or 6 × 6';
+
+                    html += `
+                        <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-rose-900">2.${i + 1} ${label}</span>
+                                <span class="text-[10px] text-rose-700 font-semibold">Value or Length × Breadth</span>
+                            </div>
+                            <input type="text" id="userCutoutArea_${i}" placeholder="${hintText}" 
+                                   class="w-full px-2.5 py-1.5 text-xs bg-white border border-rose-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none">
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="p-3.5 bg-slate-900 text-white rounded-xl space-y-2 shadow">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-amber-300">3. Final Composite Area (m²)</span>
+                            <span class="text-[10px] text-slate-300">Outer Area − Cutouts</span>
+                        </div>
+                        <input type="text" id="userFinalArea" placeholder="e.g. 135 or 192 - 57" 
+                               class="w-full px-2.5 py-1.5 text-xs bg-slate-800 text-white border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-400 outline-none">
+                        <button onclick="checkStudentTakeAwayAnswers()" class="w-full mt-2 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-lg transition-colors shadow">
+                            Check My Area Calculations 🎯
+                        </button>
+                    </div>
+                `;
+
+                workspace.innerHTML = html;
+            }
+        }
+
+        function checkStudentTakeAwayAnswers() {
+            const fig = FIGURES[currentFigIndex];
+            const bb = fig.bounding;
+
+            const userOuterRaw = document.getElementById('userOuterArea')?.value;
+            const userFinalRaw = document.getElementById('userFinalArea')?.value;
+
+            const userOuter = evalMathExpression(userOuterRaw);
+            const userFinal = evalMathExpression(userFinalRaw);
+
+            if (isNaN(userOuter) || isNaN(userFinal)) {
+                showToast("Please enter your calculations for Outer Area and Final Area!", "💡");
+                return;
+            }
+
+            // Gather student inputs for cutouts
+            const userCutouts = [];
+            for (let i = 0; i < bb.cutouts.length; i++) {
+                const valRaw = document.getElementById(`userCutoutArea_${i}`)?.value;
+                const val = evalMathExpression(valRaw);
+                if (isNaN(val)) {
+                    showToast(`Please enter a calculation for all ${bb.cutouts.length} cutout area field(s)!`, "💡");
+                    return;
+                }
+                userCutouts.push(val);
+            }
+
+            const sortedUserCutouts = userCutouts.slice().sort((a, b) => a - b);
+
+            // If the figure has multiple cutout variants (e.g. Stairs: 5×3 & 6×7 vs 11×3 & 6×4), check all variants!
+            let matchedVariant = null;
+            if (bb.variants) {
+                for (let v of bb.variants) {
+                    const expectedCutouts = v.cutouts.map(c => c.area).sort((a, b) => a - b);
+                    if (expectedCutouts.every((val, idx) => Math.abs(val - sortedUserCutouts[idx]) < 0.01)) {
+                        matchedVariant = v;
+                        break;
+                    }
+                }
+            } else {
+                const expectedCutouts = bb.cutouts.map(c => c.area).sort((a, b) => a - b);
+                if (expectedCutouts.every((val, idx) => Math.abs(val - sortedUserCutouts[idx]) < 0.01)) {
+                    matchedVariant = bb;
+                }
+            }
+
+            if (Math.abs(userOuter - bb.outerArea) < 0.01 && matchedVariant !== null && Math.abs(userFinal - bb.finalArea) < 0.01) {
+                if (bb.variants) {
+                    const vIdx = bb.variants.indexOf(matchedVariant);
+                    if (vIdx !== -1 && vIdx !== bb.activeVariantIndex) {
+                        bb.activeVariantIndex = vIdx;
+                        renderBoundingBoxView();
+                    }
+                }
+                const strategyName = bb.variants ? ` (${matchedVariant.label})` : '';
+                showToast(`Fantastic work! Perfect calculation: ${bb.finalArea} m²${strategyName}`, "🎉");
+            } else {
+                showToast("Not quite right yet. Check your length × width calculations!", "🤔");
+            }
+        }
+
+        function toggleBBOuter() {
+            bbOuterTraced = !bbOuterTraced;
+            if (!bbOuterTraced) bbTracedCutouts.clear();
+            renderBoundingBoxView();
+        }
+
+        function toggleBBCutout(idx) {
+            if (!bbOuterTraced) {
+                showToast("Trace the Big Outer Box first!", "💡");
+                return;
+            }
+            if (bbTracedCutouts.has(idx)) {
+                bbTracedCutouts.delete(idx);
+            } else {
+                bbTracedCutouts.add(idx);
+            }
+            renderBoundingBoxView();
+        }
+
+        function showToast(msg, icon = '⚠️') {
+            const toast = document.getElementById('toastMessage');
+            if (!toast) return;
+
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastText').textContent = msg;
+
+            toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
